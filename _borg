@@ -1,0 +1,247 @@
+#compdef borg
+
+# -------
+#
+# For borg 1.0.5
+#
+# To Install:
+#
+# Copy this file to /usr/share/zsh/site-functions/
+#
+# -------
+# borgbackup ZSH completion
+# Kevin Gravier 2016 <kevin@mrkmg.com>
+# 
+# The MIT License (MIT)
+
+# Copyright (c) 2016 Kevin
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+_borg() {
+    local curcontext="$curcontext" state line
+    typeset -A opt_args
+
+    _arguments \
+        {-h,--help}'[Show Help]'\
+        {-V,--version}'[Show Version]'
+
+
+	_arguments -C \
+        ':command:->command'\
+        '*::options:->options'
+
+	case "$state" in
+		(command)
+			local -a subcommands
+            subcommands=(
+                'serve:start repository server process'
+                'init:initialize empty repository'
+                'check:verify repository'
+                'change-passphrase:change repository passphrase'
+                'migrate-to-repokey:migrate passphrase-mode repository to repokey'
+                'create:create backup'
+                'extract:extract archive contents'
+                'rename:rename archive'
+                'delete:delete archive'
+                'list:list archive or repository contents'
+                'mount:mount repository'
+                'info:show archive information'
+                'break-lock:break repository and cache locks'
+                'prune:prune archives'
+                'upgrade:upgrade repository format'
+            )
+            _describe -t commands '' subcommands
+            ;;
+        (options)
+            case $line[1] in
+                (serve)
+                    __borg_standard_options
+                    _arguments \
+                        --restrict-to-path'[restrict repository access to PATH]:_files'\
+                        --append-only'[only allow appending to repository segment files]'
+                    ;;
+                (list)
+                    __borg_standard_options
+                    _arguments \
+                        '1:first archive:__borg_archive'\
+                        --short'[only print file/directory names, nothing else]'\
+                        --list-format'[specify format]:format'\
+                        {-P,--prefix}'[only consider archive names starting with this prefix]:prefix:_files'
+                    ;;
+                (check)
+                    __borg_standard_options
+                    _arguments \
+                        '1:first archive:__borg_archive'\
+                        --repository-only'[only perform repository checks]'\
+                        --archives-only'[only perform archive checks]'\
+                        --repair'[attempt to repair an inconsistancies found]'\
+                        --save-space'[work slower, but using less space]'\
+                        {-P,--prefix}'[only consider archive names starting with this prefix]:prefix:_files'
+
+                    ;;
+                (change-passphrase)
+                    __borg_standard_options
+                    _arguments \
+                        '1:first repo:_files'\
+                    ;;
+                (migrate-to-repokey)
+                    __borg_standard_options
+                    _arguments \
+                        '1:first repo:_files'\
+                    ;;
+                (create)
+                    __borg_standard_options
+                    _arguments \
+                        '1:first archive:__borg_archive'\
+                        ':next path:_files'\
+                        {-p,--progress}'[show progress display while creating the archive]'\
+                        --list'[output verbose list of items]'\
+                        --filter'[only display item with given chars]:chars'\
+                        {-e,--exclude}'[exclude by Pattern]:pattern'\
+                        --exclude-caches'[exclude directory that contain a CACHEDIR.TAG file]'\
+                        --exclude-if-present'[exclude directories that contain the specified file]'\
+                        --keep-tag-files'[keep tag files of excluded caches/directories]'\
+                        {-c,--checkpoint-interval}'[write checkpoint every X seconds]'\
+                        {-x,--one-file-system}'[stay in the same file system]'\
+                        --numeric-owner'[only store numeric user and group identifiers]'\
+                        --timestamp'[manually specify the archive creation date/time (UTC)]:timestamp'\
+                        --ignore-inode'[ignore inode data in the file metadata cache]'\
+                        {-C,--compression}'[select a compression algorithm (and level)]:arg:(lz4 zlib lzma)'\
+                        --read-special'[open and read block anc char device files as well]'\
+                        {-n,--dry-run}'[do not create a backup]'\
+                        {-s,--stats}'[print statistics for the created archives]' 
+                    ;;
+                (extract)
+                    __borg_standard_options
+                    _arguments \
+                        '1:first archive:__borg_archive'\
+                        ':next arg[Path in archive]'\
+                        --list'[output verbose list of items]'\
+                        {-n,--dry-run}'[do not create a backup]'\
+                        {-e,--exclude}'[exclude by Pattern]:pattern'\
+                        --numeric-owner'[only store numeric user and group identifiers]'\
+                        --strip-components'[strip N number of leading path elements.]:number'\
+                        --stdout'[output to stdout]'\
+                        --sparse'[create holes in output sparse file from all-zero chuncks]'
+
+                (rename)
+                    __borg_standard_options
+                    _arguments \
+                        '1:first archive:__borg_archive'\
+                        ':next arg[New Name]'
+                    ;;
+                (delete)
+                    __borg_standard_options
+                    _arguments \
+                        '1:first archive:__borg_archive'\
+                        {-s,--stats}'[print statistics for the deleted archives]'\
+                        --force'[force deletion of corrupted archives]'\
+                        {-c,--cache-only}'[deleonly only the local cache for the given repository]'\
+                        --save-space'[work slower, but using less space]'
+                    ;;
+                (list)
+                    __borg_standard_options
+                    _arguments \
+                        '1:first archive:__borg_archive'\
+                        --short'[only print file/directory names, nothing else]'\
+                        --list-format'[specify format for archive file listing (default: "{mode} {user:6} {group:6} {size:8d} {isomtime} {path}{extra}{NEWLINE}") Special "{formatkeys}" exists to list available keys]'\
+                        {-P,--prefix}'[only consider archive names starting with this prefix]:prefix:_files'
+                    ;;
+                (mount)
+                    __borg_standard_options
+                    _arguments \
+                        '1:first archive:__borg_archive'\
+                        {-f,--foreground}'[stay in foreground, do not daemonize]'\
+                        -o'[Extra Mount Options]'
+                    ;;
+                (info)
+                    __borg_standard_options
+                    _arguments \
+                        '1:first archive:__borg_archive'\
+                    ;;
+                (break-lock)
+                    __borg_standard_options
+                    _arguments \
+                        '1:first archive:__borg_archive'\
+                    ;;
+                (prune)
+                    __borg_standard_options
+                    _arguments \
+                        '1:first repo:__files'\
+                        {-n,--dry-run}'[do not change the repository]'\
+                        --force'[force pruning]'\
+                        {-s,--stats}'[print statistics for the deleted archives]'\
+                        --list'[output verbose list of archives it keeps/prunes]'\
+                        --save-space'[work slower, but using less space]'\
+                        --keep-withen'[keep all archvie within this time interval]:interval'\
+                        {-P,--prefix}'[only consider archive names starting with this prefix]:prefix:_files'\
+                        {-H,--keep-hourly}'[number of hourly backups to keep]:time'\
+                        {-d,--keep-daily}'[number of daily backups to keep]:time'\
+                        {-w,--keep-weekly}'[number of weekly backups to keep]:time'\
+                        {-m,--keep-monthly}'[number of monthly backups to keep]:time'\
+                        {-y,--keep-yearly}'[number of yearly backups to keep]:time'
+
+
+                    ;;
+                (upgrade)
+                    __borg_standard_options
+                    _arguments \
+                        '1:first repo:__files'\
+                        {-p,--progress}'[show progress display while upgrading]'\
+                        {-n,--dry-run}'[do not change repository]'\
+                        {-i,--inplace}'[rewrite repository in place, with no change of going back]'\
+                    ;;
+            esac
+            ;;
+    esac
+}
+
+__borg_standard_options() {
+    _arguments \
+        {-h,--help}'[show this help message and exit]'\
+        --critical'[work on log level CRITICAL]'\
+        --error'[work on log level ERROR]'\
+        --warning'[work on log level WARNING (default)]'\
+        {--info,-v,--verbose}'[work on log level INFO]'\
+        --debug'[work on log level DEBUG]'\
+        --lock-wait'[wait for the lock, but max. N seconds (default: 1).]:N'\
+        --show-rc'[show/log the return code (rc)]'\
+        --no-files-cache'[do not load/update the file metadata cache used to detect unchanged files]'\
+        --umask'[set umask to M (local and remote, default: 0077)]:umask'\
+        --remote-path'[set remote path to executable (default: "borg")]:_files'\
+}
+
+__borg_archive() {
+    local -a cpath
+    cpath=$line[1]
+    cpath=${cpath%::*}
+
+    if [[ -d "${cpath}" && -f "${cpath}/README" && "$(cat ${cpath}/README)" == "This is a Borg repository" ]]; then
+        local items
+        items=("${(@f)$(borg list --short ${cpath} 2>/dev/null | sed "s#^#${cpath}::#" )}")
+        _wanted archives expl 'archive' compadd $items
+    else
+        _files -/
+    fi
+
+}
+
+
+_borg "$@"
