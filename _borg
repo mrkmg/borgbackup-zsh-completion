@@ -2,7 +2,7 @@
 
 # -------
 #
-# For borg 1.1.0
+# For borg 1.1.1
 #
 # To Install:
 #
@@ -53,7 +53,6 @@ _borg() {
                              --lock-wait'[wait at most SECONDS for acquiring a repository/cache lock (default: 1).]:SECONDS'
                              --show-version'[show/log the borg version]'
                              --show-rc'[show/log the return code (rc)]'
-                             --no-files-cache'[do not load/update the file metadata cache used to detect unchanged files]'
                              --umask'[set umask to M (local and remote, default: 0077)]:umask'
                              --remote-path'[set remote path to executable (default: "borg")]:_files'
                              --remote-ratelimit'[set remote network upload rate limit in kiByte/s (default: 0=unlimited)]:RATE'
@@ -153,6 +152,7 @@ _borg() {
                 --numeric-owner'[only store numeric user and group identifiers]'\
                 --noatime'[do not store atime into archive]'\
                 --noctime'[do not store ctime into archive]'\
+                --nobsdflags'[do not read and store bsdflags (e.g. NODUMP, IMMUTABLE) into archive]'\
                 --ignore-inode'[gnore inode data in the file metadata cache used to detect unchanged files.]'\
                 --files-cache'[operate files cache in MODE. default: ctime,size,inode]:MODE'\
                 --read-special'[open and read block and char device files as well as FIFOs as if they were regular files.]'\
@@ -163,6 +163,7 @@ _borg() {
                 --exclude-caches'[exclude directories that contain a CACHEDIR.TAG file ]'\
                 --exclude-if-present'[exclude directories that are tagged by containing a filesystem object with the given NAME]:NAME'\
                 {--keep-exclude-tags,--keep-tag-files}'[if tag objects are specified with --exclude-if-present, don’t omit the tag objects themselves]'\
+                --exclude-nodump'[exclude files flagged NODUMP]'\
                 --comment'[add a comment text to the archive]:COMMENT'\
                 --timestamp'[manually specify the archive creation date/time]:TIMESTAMP'\
                 {-c,--checkpoint-interval}'[write checkpoint every SECONDS seconds]:SECONDS'\
@@ -177,6 +178,7 @@ _borg() {
                 --list'[output verbose list of items (files, dirs, ...)]'\
                 {-n,--dry-run}'[do not actually change any files]'\
                 --numeric-owner'[only obey numeric user and group identifiers]'\
+                --nobsdflags'[do not extract/set bsdflags (e.g. NODUMP, IMMUTABLE)]'\
                 --stdout'[write all extracted data to stdout]'\
                 --sparse'[create holes in output sparse file from all-zero chunks]'\
                 {-e,--exclude}'[exclude paths matching PATTERN]:PATTERN'\
